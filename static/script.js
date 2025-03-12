@@ -1,49 +1,66 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Botón de alerta
-    const alertButton = document.createElement("button");
-    alertButton.textContent = "Haz clic aquí";
-    alertButton.classList.add("btn", "btn-warning", "mt-3");
-    document.querySelector("main").appendChild(alertButton);
-
-    alertButton.addEventListener("click", () => {
-        alert("¡Bienvenido a Black a White Society!");
-    });
-
-    // Validación del formulario de contacto
     const contactForm = document.getElementById("contact-form");
+
     if (contactForm) {
-        contactForm.addEventListener("submit", (event) => {
+        contactForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
             let isValid = true;
-            const nameInput = document.getElementById("name");
-            const emailInput = document.getElementById("email");
-            const messageInput = document.getElementById("message");
 
+            // Corregimos los IDs de los inputs (antes estaban incorrectos)
+            const nameInput = document.getElementById("nombre");  // Antes: "name"
+            const emailInput = document.getElementById("email");  // Antes: "email"
+            const messageInput = document.getElementById("mensaje"); // Antes: "message"
+
+            if (!nameInput || !emailInput || !messageInput) {
+                console.error("Uno o más elementos del formulario no fueron encontrados.");
+                return;
+            }
+
+            // Limpiar mensajes previos de error
+            nameInput.classList.remove("is-invalid");
+            emailInput.classList.remove("is-invalid");
+            messageInput.classList.remove("is-invalid");
+
+            // Validar nombre
             if (!nameInput.value.trim()) {
                 nameInput.classList.add("is-invalid");
                 isValid = false;
-            } else {
-                nameInput.classList.remove("is-invalid");
             }
 
+            // Validar email con expresión regular
             if (!emailInput.value.trim().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
                 emailInput.classList.add("is-invalid");
                 isValid = false;
-            } else {
-                emailInput.classList.remove("is-invalid");
             }
 
+            // Validar mensaje
             if (!messageInput.value.trim()) {
                 messageInput.classList.add("is-invalid");
                 isValid = false;
-            } else {
-                messageInput.classList.remove("is-invalid");
             }
 
-            if (isValid) {
-                alert("Formulario enviado con éxito");
-                contactForm.reset();
+            // Si hay errores, no enviamos el formulario
+            if (!isValid) return;
+
+            // Enviar el formulario con Fetch
+            const formData = new FormData(contactForm);
+
+            try {
+                const response = await fetch("/contacto", {  // Corregimos la ruta (antes: "/enviar_contacto")
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert("Formulario enviado con éxito");
+                    contactForm.reset();
+                } else {
+                    alert("Error al enviar el formulario");
+                }
+            } catch (error) {
+                console.error("Error en la solicitud:", error);
+                alert("Hubo un problema al enviar el formulario");
             }
         });
     }
